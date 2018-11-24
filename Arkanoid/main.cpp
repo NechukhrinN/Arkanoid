@@ -7,20 +7,15 @@ using namespace sf;
 int main()
 {
 	sf::RenderWindow window(sf::VideoMode(640, 480), "Arkanoid!");
-	sf:View view;
-	view.reset(sf::FloatRect(0, 0, 640, 480));
-	//window.setFramerateLimit(60);
-
+	window.setFramerateLimit(60);
 	float CurrentFrame = 0;
-	sf::Clock clock;
-	sf::Clock gameTimeClock;
-	int gameTime = 0;
+	sf::Clock clock_p;
 
+	
 	sf::Font font;
 	font.loadFromFile("fonts/arial.ttf");
 	sf::Text text("", font, 20);
 	text.setFillColor(Color::White);
-	//text.setStyle(sf::Text::Bold | sf::Text::Underlined);
 
 	Image map_image;
 	map_image.loadFromFile("images/map.png");
@@ -46,7 +41,7 @@ int main()
 	s_ball.setTexture(ball);
 	Sprite s_paddle;
 	s_paddle.setTexture(paddle);
-	s_paddle.setTextureRect(IntRect(0, 0, 90, 9));
+	
 	Sprite s_block;
 	s_block.setTexture(block);
 	
@@ -71,19 +66,27 @@ int main()
 			if (e.type == Event::Closed)
 				window.close();
 		}
-		
+		float time = clock_p.getElapsedTime().asMicroseconds();
+		clock_p.restart();
+		time = time / 800;
+
+
+		//Paddle animation
+		CurrentFrame += 0.008*time;
+		if (CurrentFrame > 14) CurrentFrame -= 14;
+		s_paddle.setTextureRect(IntRect(0, 9 * int(CurrentFrame), 90, 9));
+		window.draw(s_paddle);
+
+		//Blocks draw
+		for (int i = 0; i < n; i++)
+			window.draw(block_a[i]);
+
+		//Draw text with information about points
 		//std::ostringstream playerScoreString, gameTimeString;
 		//playerScoreString << p.pScore;
 		//gameTimeString << gameTime;
 		text.setString("Points: ");
-		text.setPosition(0,0);
-
-
-		window.draw(s_paddle);
-
-		for (int i = 0; i < n; i++)
-			window.draw(block_a[i]);
-
+		text.setPosition(0, 0);
 		window.draw(text);
 		window.display();
 	}
