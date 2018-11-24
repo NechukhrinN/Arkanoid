@@ -2,7 +2,6 @@
 #include <iostream>
 #include <sstream>
 #include <time.h>
-//#include "map.h"
 using namespace sf;
 
 int main()
