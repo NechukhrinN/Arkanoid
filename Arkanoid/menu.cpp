@@ -31,16 +31,22 @@ void menu(sf::RenderWindow & window) {
 		menuNum = 0;
 		window.clear(sf::Color(129, 181, 221));
 
-		if (sf::IntRect(100, 30, 300, 50).contains(sf::Mouse::getPosition(window))) { menu1.setColor(sf::Color::Blue); 
-		menuNum = 1; }
-		if (sf::IntRect(100, 90, 300, 50).contains(sf::Mouse::getPosition(window))) { menu2.setColor(sf::Color::Blue); 
-		menuNum = 2; }
-		if (sf::IntRect(100, 150, 300, 50).contains(sf::Mouse::getPosition(window))) { menu3.setColor(sf::Color::Blue);
-		menuNum = 3; }
+		if (sf::IntRect(100, 30, 300, 50).contains(sf::Mouse::getPosition(window))) {
+			menu1.setColor(sf::Color::Blue);
+			menuNum = 1;
+		}
+		if (sf::IntRect(100, 90, 300, 50).contains(sf::Mouse::getPosition(window))) {
+			menu2.setColor(sf::Color::Blue);
+			menuNum = 2;
+		}
+		if (sf::IntRect(100, 150, 300, 50).contains(sf::Mouse::getPosition(window))) {
+			menu3.setColor(sf::Color::Blue);
+			menuNum = 3;
+		}
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
-			if (menuNum == 1) isMenu = false; 
+			if (menuNum == 1) isMenu = false;
 			if (menuNum == 2) { window.draw(about);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
 			if (menuNum == 3) { window.close(); isMenu = false; }
 
@@ -58,22 +64,31 @@ void menu(sf::RenderWindow & window) {
 
 int startGame()
 {
+	bool is_space = false;
 	sf::RenderWindow window(sf::VideoMode(640, 480), "Arkanoid!");
 	menu(window);
 	window.setFramerateLimit(60);
 	float CurrentFrame = 0;
 	sf::Clock clock_p;
+	float dx = 6, dy = 5;
+	float x = 309, y = 430;
+	int pScore = 0;
 
-
+	//Loading Font
 	sf::Font font;
 	font.loadFromFile("fonts/arial.ttf");
 	sf::Text text("", font, 20);
 	text.setFillColor(sf::Color::White);
+	sf::Text text_begin("", font, 20);
+	text_begin.setFillColor(sf::Color::Black);
+	sf::Text text_end("", font, 20);
+	text_end.setFillColor(sf::Color::Red);
 
+	//Loading Images
 	sf::Image map_image;
 	map_image.loadFromFile("images/map.png");
 	sf::Image ball_image;
-	ball_image.loadFromFile("images/ball_anim.png");
+	ball_image.loadFromFile("images/ball.png");
 	sf::Image paddle_image;
 	paddle_image.loadFromFile("images/paddle_anim.png");
 	sf::Image block_image;
@@ -81,6 +96,7 @@ int startGame()
 	sf::Image backg_image;
 	backg_image.loadFromFile("images/background.jpg");
 
+	//Loading textures from images
 	sf::Texture map;
 	map.loadFromImage(map_image);
 	sf::Texture ball;
@@ -92,6 +108,7 @@ int startGame()
 	sf::Texture backg;
 	backg.loadFromImage(backg_image);
 
+	//Loading sprites from textures
 	sf::Sprite s_map;
 	s_map.setTexture(map);
 	sf::Sprite s_ball;
@@ -104,7 +121,7 @@ int startGame()
 	s_backg.setTexture(backg);
 
 	s_paddle.setPosition(270, 450);
-
+	s_ball.setPosition(309, 430);
 	sf::Sprite block_a[1000];
 
 	int n = 0;
@@ -127,7 +144,7 @@ int startGame()
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Tab)) return true;
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) return false;
-		
+
 		window.clear();
 		window.draw(s_backg);
 
@@ -136,6 +153,15 @@ int startGame()
 			//window.close(); 
 			menu(window);
 		}
+
+		
+
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Right)) s_paddle.move(8, 0);
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left)) s_paddle.move(-8, 0);
+
+		
+
+		
 
 		float time = clock_p.getElapsedTime().asMicroseconds();
 		clock_p.restart();
@@ -152,20 +178,64 @@ int startGame()
 			window.draw(block_a[i]);
 
 		//Draw text with information about points
-		//std::ostringstream playerScoreString, gameTimeString;
-		//playerScoreString << p.pScore;
+		std::ostringstream playerScoreString, gameTimeString;
+		playerScoreString << pScore;
 		//gameTimeString << gameTime;
-		text.setString("Points: ");
+		text.setString("Points: " + playerScoreString.str());
 		text.setPosition(0, 0);
+		window.draw(s_ball);
 		window.draw(text);
 		window.display();
 
+		while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && (is_space == false))
+		{
+			dx = 0;
+			dy = 0;
+		}
+		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+		{
+			dx = 6;
+			dy = -5;
+			is_space = true;
+		}
+		x += dx;
+		for (int i = 0; i < n; i++)
+			if (sf::FloatRect(x + 3, y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
+			{
+				block_a[i].setPosition(-100, 0); dx = -dx; ++pScore;
+			}
 
+		y += dy;
+		for (int i = 0; i < n; i++)
+			if (sf::FloatRect(x + 3, y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
+			{
+				block_a[i].setPosition(-100, 0); dy = -dy; ++pScore;
+			}
+
+		if (x < 0 || x>640)  dx = -dx;
+		if (y < 0)  dy = -dy;
+		if (y > 480)
+		{
+			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
+			{
+				window.clear();
+				window.draw(s_backg);
+				text_end.setString("End points: " + playerScoreString.str() + "\nPress space");
+				text_end.setPosition(260, 190);
+				window.draw(text_end);
+				window.display();
+			}
+			return -1;
+		}
+		if (sf::FloatRect(x, y, 12, 12).intersects(s_paddle.getGlobalBounds())) dy = -(rand() % 5 + 2);
+		s_ball.setPosition(x, y);
+
+		
 	}
 
 }
 
-void gameRunning() 
+void gameRunning()
 {
 	if (startGame()) gameRunning();
 }

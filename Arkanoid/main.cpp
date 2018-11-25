@@ -8,5 +8,6 @@ using namespace sf;
 int main()
 {
 	gameRunning();
+	//system("pause");
 	return 0;
 }
