@@ -5,7 +5,7 @@
 void menu(sf::RenderWindow & window) {
 	sf::Texture menuTexture1, menuTexture2, menuTexture3, menuTexture4, menuTexture5, helpTexture, highscoreTexture, aboutTexture, menuBackground;
 	menuTexture1.loadFromFile("images/ngame.png");
-	menuTexture2.loadFromFile("images/222.png");
+	menuTexture2.loadFromFile("images/highscore.png");
 	menuTexture3.loadFromFile("images/help_m.png");
 	menuTexture4.loadFromFile("images/about_m.png");
 	menuTexture5.loadFromFile("images/exit.png");
@@ -103,24 +103,18 @@ int startGame()
 	text_end.setFillColor(sf::Color::Red);
 
 	//Loading Images
-	sf::Image map_image;
-	map_image.loadFromFile("images/map.png");
 	sf::Image block_image;
 	block_image.loadFromFile("images/block.png");
 	sf::Image backg_image;
 	backg_image.loadFromFile("images/background.jpg");
 
 	//Loading textures from images
-	sf::Texture map;
-	map.loadFromImage(map_image);
 	sf::Texture block;
 	block.loadFromImage(block_image);
 	sf::Texture backg;
 	backg.loadFromImage(backg_image);
 
 	//Loading sprites from textures
-	sf::Sprite s_map;
-	s_map.setTexture(map);
 	sf::Sprite s_block;
 	s_block.setTexture(block);
 	sf::Sprite s_backg;
