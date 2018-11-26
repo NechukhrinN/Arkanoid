@@ -1,5 +1,6 @@
 #include "menu.h"
 #include "paddle.h"
+#include "ball.h"
 
 void menu(sf::RenderWindow & window) {
 	sf::Texture menuTexture1, menuTexture2, menuTexture3, aboutTexture, menuBackground;
@@ -64,14 +65,13 @@ void menu(sf::RenderWindow & window) {
 
 int startGame()
 {
-	bool is_space = false;
 	sf::RenderWindow window(sf::VideoMode(640, 480), "Arkanoid by Nikita Nechukhrin");
 	menu(window);
 	window.setFramerateLimit(60);
 	float CurrentFrame = 0;
 	sf::Clock clock_p;
-	float dx = 5, dy = 5;
-	float x = 309, y = 435;
+
+	bool is_space = false;
 	int pScore = 0;
 
 	//Loading Fonts
@@ -87,8 +87,6 @@ int startGame()
 	//Loading Images
 	sf::Image map_image;
 	map_image.loadFromFile("images/map.png");
-	sf::Image ball_image;
-	ball_image.loadFromFile("images/ball.png");
 	sf::Image block_image;
 	block_image.loadFromFile("images/block.png");
 	sf::Image backg_image;
@@ -97,8 +95,6 @@ int startGame()
 	//Loading textures from images
 	sf::Texture map;
 	map.loadFromImage(map_image);
-	sf::Texture ball;
-	ball.loadFromImage(ball_image);
 	sf::Texture block;
 	block.loadFromImage(block_image);
 	sf::Texture backg;
@@ -107,15 +103,13 @@ int startGame()
 	//Loading sprites from textures
 	sf::Sprite s_map;
 	s_map.setTexture(map);
-	sf::Sprite s_ball;
-	s_ball.setTexture(ball);
 	sf::Sprite s_block;
 	s_block.setTexture(block);
 	sf::Sprite s_backg;
 	s_backg.setTexture(backg);
 
-	s_ball.setPosition(309, 435);
 	sf::Sprite block_a[1000];
+	Ball ball("ball.png", 309,435, 12, 12);
 	Paddle paddle("paddle_anim.png", 270, 450, 90, 9);
 	int n = 0;
 	for (int i = 1; i <= 10; i++)
@@ -147,15 +141,9 @@ int startGame()
 		window.draw(s_backg);
 		paddle.update(time);
 		window.draw(paddle.sprite);
-		window.draw(s_ball);
-		/*if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape))
-		{
-			//window.close(); 
-			menu(window);
-		}*/
-	
+		ball.update();
+		window.draw(ball.sprite);
 		
-
 		//Blocks draw
 		for (int i = 0; i < n; i++)
 			window.draw(block_a[i]);
@@ -163,44 +151,45 @@ int startGame()
 		//Draw text with information about points
 		std::ostringstream playerScoreString, gameTimeString;
 		playerScoreString << pScore;
-		//gameTimeString << gameTime;
 		text.setString("Points: " + playerScoreString.str());
 		text.setPosition(0, 0);
-		
 		
 		window.draw(text);
 		window.display();
 
 		while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && (is_space == false))
 		{			
-			dx = 0;
-			dy = 0;
+			ball.dx = 0;
+			ball.dy = 0;
 		}
+
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 		{
-			dx = 5;
-			dy = -5;
+			ball.dx = 5;
+			ball.dy = -5;
 			is_space = true;
 		}
-		x += dx;
+		
+		ball.x += ball.dx;
+	
 		for (int i = 0; i < n; i++)
-			if (sf::FloatRect(x + 3, y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
+			if (sf::FloatRect(ball.x + 3, ball.y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
 			{
-				block_a[i].setPosition(-100, 0); dx = -dx; ++pScore;
+				block_a[i].setPosition(-100, 0); ball.dx = -ball.dx; ++pScore;
 			}
 
-		y += dy;
+		
+		ball.y += ball.dy;
+
 		for (int i = 0; i < n; i++)
-			if (sf::FloatRect(x + 3, y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
+			if (sf::FloatRect(ball.x + 3, ball.y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
 			{
-				block_a[i].setPosition(-100, 0); dy = -dy; ++pScore;
+				block_a[i].setPosition(-100, 0); ball.dy = -ball.dy; ++pScore;
 			}
 
-		if (x < 0 || x > 640)  dx = -dx;
-		if (y < 0)  dy = -dy;
 		
 		//Ending screen
-		if (y > 480)
+		if (ball.y > 480)
 		{
 			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 			{
@@ -213,10 +202,9 @@ int startGame()
 			}
 			return -1;
 		}
-		if (sf::FloatRect(x, y, 12, 12).intersects(paddle.sprite.getGlobalBounds())) dy = -5;
-		s_ball.setPosition(x, y);
-
 		
+		if (sf::FloatRect(ball.x, ball.y, 12, 12).intersects(paddle.sprite.getGlobalBounds())) ball.dy = -5;
+				
 	}
 
 }
