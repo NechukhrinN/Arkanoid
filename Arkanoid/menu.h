@@ -3,6 +3,7 @@
 #include <SFML\Graphics.hpp>
 #include <sstream>
 #include <string>
+#include <iostream>
 
 void menu(sf::RenderWindow & window);
 
