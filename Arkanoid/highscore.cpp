@@ -1,5 +1,7 @@
 #include "highscore.h"
 
+/*Method loads actual highscore from the file, 
+check it with new score and save it if (new > old), return actual/new highscore*/
 int get_highscore(int score)
 {
 	int highScore;

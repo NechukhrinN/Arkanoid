@@ -1,5 +1,6 @@
 #include "paddle.h"
 
+/*Constructor of class Paddle, get starter information about object, include acceleration and sprite*/
 Paddle::Paddle(sf::String F, float X, float Y, float W, float H)
 {
 	dx = 0; speed = 0;
@@ -13,6 +14,7 @@ Paddle::Paddle(sf::String F, float X, float Y, float W, float H)
 	sprite.setTextureRect(sf::IntRect(0, 0, w, h));
 }
 
+/*Method update: realizes object movement*/
 void Paddle::update(float time)
 {
 	switch (dir)
@@ -31,7 +33,7 @@ void Paddle::update(float time)
 	if (CurrentFrame > 14) CurrentFrame -= 14;
 	sprite.setTextureRect(sf::IntRect(0, 9 * int(CurrentFrame), 90, 9));
 
-	//Paddle move
+	//Paddle's movement considering window borders (left and right) 
 	if (sf::Keyboard::isKeyPressed(sf::Keyboard::Left) && (getpaddlecoordinateX() >= 0))
 	{
 		dir = 1; speed = 0.5;
