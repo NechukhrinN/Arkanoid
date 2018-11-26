@@ -121,7 +121,7 @@ int startGame()
 	s_backg.setTexture(backg);
 
 	/*Making array with information of position of blocks*/
-	sf::Sprite block_a[1000]; 
+	sf::Sprite block_a[100]; 
 	int n = 0;
 	for (int i = 1; i <= 10; i++)
 		for (int j = 1; j <= 10; j++)
@@ -209,10 +209,10 @@ int startGame()
 
 		if (sf::FloatRect(ball.x, ball.y, 12, 12).intersects(paddle.sprite.getGlobalBounds())) ball.dy = -5;
 
-		/*Ending screen start when ball get the bottom line of window, include 
-		  actual score and highscore, highscore rewrite if actual score is higher
+		/*"End screen" start when ball hit the bottom line of window or player get 100 point,
+		  include actual score and highscore, highscore rewrite if actual score is higher
 		  This information is active while "Space" key is not clicked*/
-		if (ball.y > 480)
+		if ((ball.y > 480) || (pScore == 100))
 		{
 			gameHS << get_highscore(pScore);
 			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
