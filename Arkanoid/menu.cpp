@@ -3,19 +3,24 @@
 #include "ball.h"
 
 void menu(sf::RenderWindow & window) {
-	sf::Texture menuTexture1, menuTexture2, menuTexture3, aboutTexture, menuBackground;
-	menuTexture1.loadFromFile("images/111.png");
+	sf::Texture menuTexture1, menuTexture2, menuTexture3, menuTexture4, menuTexture5, helpTexture, highscoreTexture, aboutTexture, menuBackground;
+	menuTexture1.loadFromFile("images/ngame.png");
 	menuTexture2.loadFromFile("images/222.png");
-	menuTexture3.loadFromFile("images/333.png");
+	menuTexture3.loadFromFile("images/help_m.png");
+	menuTexture4.loadFromFile("images/about_m.png");
+	menuTexture5.loadFromFile("images/exit.png");
+	helpTexture.loadFromFile("images/help.png");
 	aboutTexture.loadFromFile("images/about.png");
 	menuBackground.loadFromFile("images/main_back.jpg");
-	sf::Sprite menu1(menuTexture1), menu2(menuTexture2), menu3(menuTexture3), about(aboutTexture), menuBg(menuBackground);
+	sf::Sprite menu1(menuTexture1), menu2(menuTexture2), menu3(menuTexture3), menu4(menuTexture4), menu5(menuTexture5), help(helpTexture), about(aboutTexture), menuBg(menuBackground);
 	bool isMenu = 1;
 	int menuNum = 0;
 	window.draw(menuBg);
 	menu1.setPosition(100, 30);
 	menu2.setPosition(100, 90);
 	menu3.setPosition(100, 150);
+	menu4.setPosition(100, 210);
+	menu5.setPosition(100, 270);
 
 	while (isMenu)
 	{
@@ -29,6 +34,8 @@ void menu(sf::RenderWindow & window) {
 		menu1.setColor(sf::Color::White);
 		menu2.setColor(sf::Color::White);
 		menu3.setColor(sf::Color::White);
+		menu4.setColor(sf::Color::White);
+		menu5.setColor(sf::Color::White);
 		menuNum = 0;
 		window.clear(sf::Color(129, 181, 221));
 
@@ -44,12 +51,21 @@ void menu(sf::RenderWindow & window) {
 			menu3.setColor(sf::Color::Blue);
 			menuNum = 3;
 		}
+		if (sf::IntRect(100, 210, 300, 50).contains(sf::Mouse::getPosition(window))) {
+			menu4.setColor(sf::Color::Blue);
+			menuNum = 4;
+		}
+		if (sf::IntRect(100, 270, 300, 50).contains(sf::Mouse::getPosition(window))) {
+			menu5.setColor(sf::Color::Blue);
+			menuNum = 5;
+		}
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			if (menuNum == 1) isMenu = false;
-			if (menuNum == 2) { window.draw(about);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
-			if (menuNum == 3) { window.close(); isMenu = false; }
+			if (menuNum == 3) { window.draw(help);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
+			if (menuNum == 4) { window.draw(about);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
+			if (menuNum == 5) { window.close(); isMenu = false; }
 
 		}
 
@@ -57,6 +73,8 @@ void menu(sf::RenderWindow & window) {
 		window.draw(menu1);
 		window.draw(menu2);
 		window.draw(menu3);
+		window.draw(menu4);
+		window.draw(menu5);
 
 		window.display();
 	}
@@ -129,7 +147,7 @@ int startGame()
 				window.close();
 		}
 
-		float time = clock_p.getElapsedTime().asMicroseconds();
+		float time = static_cast<float>(clock_p.getElapsedTime().asMicroseconds());
 		clock_p.restart();
 		time = time / 800;
 
