@@ -5,7 +5,7 @@ Ball::Ball(sf::String F, float X, float Y, float W, float H)
 	dx = 5; dy = -5;
 	File = F;
 	w = W; h = H;
-	image.loadFromFile("images/" + File);
+	image.loadFromFile("res/images/" + File);
 	texture.loadFromImage(image);
 	sprite.setTexture(texture);
 	x = X; y = Y;

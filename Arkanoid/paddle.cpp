@@ -6,7 +6,7 @@ Paddle::Paddle(sf::String F, float X, float Y, float W, float H)
 	File = F;
 	w = W; h = H;
 	CurrentFrame = 0;
-	image.loadFromFile("images/" + File);
+	image.loadFromFile("res/images/" + File);
 	texture.loadFromImage(image);
 	sprite.setTexture(texture);
 	x = X; y = Y;

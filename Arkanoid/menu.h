@@ -4,6 +4,7 @@
 #include <sstream>
 #include <string>
 #include <iostream>
+#include "highscore.h"
 
 void menu(sf::RenderWindow & window);
 

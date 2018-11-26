@@ -3,16 +3,15 @@
 #include "ball.h"
 
 void menu(sf::RenderWindow & window) {
-	sf::Texture menuTexture1, menuTexture2, menuTexture3, menuTexture4, menuTexture5, helpTexture, highscoreTexture, aboutTexture, menuBackground;
-	menuTexture1.loadFromFile("images/ngame.png");
-	menuTexture2.loadFromFile("images/highscore.png");
-	menuTexture3.loadFromFile("images/help_m.png");
-	menuTexture4.loadFromFile("images/about_m.png");
-	menuTexture5.loadFromFile("images/exit.png");
-	helpTexture.loadFromFile("images/help.png");
-	aboutTexture.loadFromFile("images/about.png");
-	menuBackground.loadFromFile("images/main_back.jpg");
-	sf::Sprite menu1(menuTexture1), menu2(menuTexture2), menu3(menuTexture3), menu4(menuTexture4), menu5(menuTexture5), help(helpTexture), about(aboutTexture), menuBg(menuBackground);
+	sf::Texture menuTexture1, menuTexture2, menuTexture3, menuTexture4, helpTexture, highscoreTexture, aboutTexture, menuBackground;
+	menuTexture1.loadFromFile("res/images/ngame.png");
+	menuTexture2.loadFromFile("res/images/help_m.png");
+	menuTexture3.loadFromFile("res/images/about_m.png");
+	menuTexture4.loadFromFile("res/images/exit.png");
+	helpTexture.loadFromFile("res/images/help.png");
+	aboutTexture.loadFromFile("res/images/about.png");
+	menuBackground.loadFromFile("res/images/main_back.jpg");
+	sf::Sprite menu1(menuTexture1), menu2(menuTexture2), menu3(menuTexture3), menu4(menuTexture4), help(helpTexture), about(aboutTexture), menuBg(menuBackground);
 	bool isMenu = 1;
 	int menuNum = 0;
 	window.draw(menuBg);
@@ -20,7 +19,6 @@ void menu(sf::RenderWindow & window) {
 	menu2.setPosition(100, 90);
 	menu3.setPosition(100, 150);
 	menu4.setPosition(100, 210);
-	menu5.setPosition(100, 270);
 
 	while (isMenu)
 	{
@@ -35,7 +33,6 @@ void menu(sf::RenderWindow & window) {
 		menu2.setColor(sf::Color::White);
 		menu3.setColor(sf::Color::White);
 		menu4.setColor(sf::Color::White);
-		menu5.setColor(sf::Color::White);
 		menuNum = 0;
 		window.clear(sf::Color(129, 181, 221));
 
@@ -55,17 +52,13 @@ void menu(sf::RenderWindow & window) {
 			menu4.setColor(sf::Color::Blue);
 			menuNum = 4;
 		}
-		if (sf::IntRect(100, 270, 300, 50).contains(sf::Mouse::getPosition(window))) {
-			menu5.setColor(sf::Color::Blue);
-			menuNum = 5;
-		}
 
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			if (menuNum == 1) isMenu = false;
-			if (menuNum == 3) { window.draw(help);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
-			if (menuNum == 4) { window.draw(about);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
-			if (menuNum == 5) { window.close(); isMenu = false; }
+			if (menuNum == 2) { window.draw(help);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
+			if (menuNum == 3) { window.draw(about);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
+			if (menuNum == 4) { window.close(); isMenu = false; }
 
 		}
 
@@ -74,7 +67,6 @@ void menu(sf::RenderWindow & window) {
 		window.draw(menu2);
 		window.draw(menu3);
 		window.draw(menu4);
-		window.draw(menu5);
 
 		window.display();
 	}
@@ -86,15 +78,16 @@ int startGame()
 	sf::RenderWindow window(sf::VideoMode(640, 480), "Arkanoid by Nikita Nechukhrin");
 	menu(window);
 	window.setFramerateLimit(60);
+	int pScore = 0;
 	float CurrentFrame = 0;
 	sf::Clock clock_p;
 
 	bool is_space = false;
-	int pScore = 0;
+	
 
 	//Loading Fonts
 	sf::Font font;
-	font.loadFromFile("fonts/arial.ttf");
+	font.loadFromFile("res/fonts/arial.ttf");
 	sf::Text text("", font, 20);
 	text.setFillColor(sf::Color::White);
 	sf::Text text_begin("", font, 20);
@@ -104,9 +97,9 @@ int startGame()
 
 	//Loading Images
 	sf::Image block_image;
-	block_image.loadFromFile("images/block.png");
+	block_image.loadFromFile("res/images/block.png");
 	sf::Image backg_image;
-	backg_image.loadFromFile("images/background.jpg");
+	backg_image.loadFromFile("res/images/background.jpg");
 
 	//Loading textures from images
 	sf::Texture block;
@@ -161,7 +154,7 @@ int startGame()
 			window.draw(block_a[i]);
 
 		//Draw text with information about points
-		std::ostringstream playerScoreString, gameTimeString;
+		std::ostringstream playerScoreString, gameHS;
 		playerScoreString << pScore;
 		text.setString("Points: " + playerScoreString.str());
 		text.setPosition(0, 0);
@@ -203,15 +196,17 @@ int startGame()
 		//Ending screen
 		if (ball.y > 480)
 		{
+			gameHS << get_highscore(pScore);
 			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
 			{
 				window.clear();
 				window.draw(s_backg);
-				text_end.setString("End points: " + playerScoreString.str() + "\nPress space");
-				text_end.setPosition(260, 190);
+				text_end.setString("End points: " + playerScoreString.str() + "\nPress space" + "\nHigh Score: " + gameHS.str());
+				text_end.setPosition(260, 190);				
 				window.draw(text_end);
 				window.display();
 			}
+			
 			return -1;
 		}
 		
