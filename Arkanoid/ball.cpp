@@ -13,6 +13,7 @@ Ball::Ball(sf::String F, float X, float Y, float W, float H)
 	sprite.setTextureRect(sf::IntRect(0, 0, w, h));
 }
 
+Ball::~Ball() {}
 /*Update method sets ball position and ball's collision with wall*/
 void Ball::update()
 {

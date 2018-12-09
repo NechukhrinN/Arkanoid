@@ -13,6 +13,7 @@ public:
 	sf::Sprite sprite;
 
 	Ball(sf::String F, float X, float Y, float W, float H);
+	~Ball();
 	void update();
 	float getballcoordinateX();
 	float getballcoordinateY();

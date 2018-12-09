@@ -45,6 +45,8 @@ void Paddle::update(float time)
 	}
 }
 
+Paddle::~Paddle() {}
+
 
 float Paddle::getpaddlecoordinateX()
 {

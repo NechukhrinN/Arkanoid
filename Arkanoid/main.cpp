@@ -3,7 +3,7 @@
 #include <sstream>
 #include <time.h>
 #include "menu.h"
-using namespace sf;
+
 
 int main()
 {

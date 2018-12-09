@@ -15,6 +15,7 @@ public:
 	sf::Sprite sprite;
 
 	Paddle(sf::String F, float X, float Y, float W, float H);
+	~Paddle();
 	void update(float time);
 	float getpaddlecoordinateX();
 	float getpaddlecoordinateY();
