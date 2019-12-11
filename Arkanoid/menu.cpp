@@ -7,22 +7,38 @@
 void menu(sf::RenderWindow & window) {
 
 	/*Loading bottom's sprites and set bottom's position*/
-	sf::Texture menuTexture1, menuTexture2, menuTexture3, menuTexture4, helpTexture, highscoreTexture, aboutTexture, menuBackground;
-	menuTexture1.loadFromFile("res/images/ngame.png");
-	menuTexture2.loadFromFile("res/images/help_m.png");
-	menuTexture3.loadFromFile("res/images/about_m.png");
-	menuTexture4.loadFromFile("res/images/exit.png");
-	helpTexture.loadFromFile("res/images/help.png");
-	aboutTexture.loadFromFile("res/images/about.png");
-	menuBackground.loadFromFile("res/images/main_back.jpg");
-	sf::Sprite menu1(menuTexture1), menu2(menuTexture2), menu3(menuTexture3), menu4(menuTexture4), help(helpTexture), about(aboutTexture), menuBg(menuBackground);
+	sf::Texture* menuTexture1 = new sf::Texture; 
+	sf::Texture* menuTexture2 = new sf::Texture;
+	sf::Texture* menuTexture3 = new sf::Texture;
+	sf::Texture* menuTexture4 = new sf::Texture; 
+	sf::Texture* helpTexture = new sf::Texture;
+	sf::Texture* highscoreTexture = new sf::Texture;
+	sf::Texture* aboutTexture = new sf::Texture; 
+	sf::Texture* menuBackground = new sf::Texture;
+
+	menuTexture1->loadFromFile("res/images/ngame.png");
+	menuTexture2->loadFromFile("res/images/help_m.png");
+	menuTexture3->loadFromFile("res/images/about_m.png");
+	menuTexture4->loadFromFile("res/images/exit.png");
+	helpTexture->loadFromFile("res/images/help.png");
+	aboutTexture->loadFromFile("res/images/about.png");
+	menuBackground->loadFromFile("res/images/main_back.jpg");
+	
+	sf::Sprite* menu1 = new sf::Sprite(*menuTexture1);
+	sf::Sprite* menu2 = new sf::Sprite(*menuTexture2); 
+	sf::Sprite* menu3 = new sf::Sprite(*menuTexture3); 
+	sf::Sprite* menu4 = new sf::Sprite(*menuTexture4); 
+	sf::Sprite* help = new sf::Sprite(*helpTexture); 
+	sf::Sprite* about = new sf::Sprite(*aboutTexture); 
+	sf::Sprite* menuBg = new sf::Sprite(*menuBackground);
+
 	bool isMenu = 1;
 	int menuNum = 0;
-	window.draw(menuBg);
-	menu1.setPosition(100, 30);
-	menu2.setPosition(100, 90);
-	menu3.setPosition(100, 150);
-	menu4.setPosition(100, 210);
+	window.draw(*menuBg);
+	menu1->setPosition(100, 30);
+	menu2->setPosition(100, 90);
+	menu3->setPosition(100, 150);
+	menu4->setPosition(100, 210);
 
 	while (isMenu)
 	{
@@ -33,36 +49,36 @@ void menu(sf::RenderWindow & window) {
 				window.close();
 		}
 
-		menu1.setColor(sf::Color::White);
-		menu2.setColor(sf::Color::White);
-		menu3.setColor(sf::Color::White);
-		menu4.setColor(sf::Color::White);
+		menu1->setColor(sf::Color::White);
+		menu2->setColor(sf::Color::White);
+		menu3->setColor(sf::Color::White);
+		menu4->setColor(sf::Color::White);
 		menuNum = 0;
 		window.clear(sf::Color(129, 181, 221));
 
 		/*Activation of the backlight when you hover the mouse*/
 		if (sf::IntRect(100, 30, 300, 50).contains(sf::Mouse::getPosition(window))) {
-			menu1.setColor(sf::Color::Blue);
+			menu1->setColor(sf::Color::Blue);
 			menuNum = 1;
 		}
 		if (sf::IntRect(100, 90, 300, 50).contains(sf::Mouse::getPosition(window))) {
-			menu2.setColor(sf::Color::Blue);
+			menu2->setColor(sf::Color::Blue);
 			menuNum = 2;
 		}
 		if (sf::IntRect(100, 150, 300, 50).contains(sf::Mouse::getPosition(window))) {
-			menu3.setColor(sf::Color::Blue);
+			menu3->setColor(sf::Color::Blue);
 			menuNum = 3;
 		}
 		if (sf::IntRect(100, 210, 300, 50).contains(sf::Mouse::getPosition(window))) {
-			menu4.setColor(sf::Color::Blue);
+			menu4->setColor(sf::Color::Blue);
 			menuNum = 4;
 		}
 
-		window.draw(menuBg);
-		window.draw(menu1);
-		window.draw(menu2);
-		window.draw(menu3);
-		window.draw(menu4);
+		window.draw(*menuBg);
+		window.draw(*menu1);
+		window.draw(*menu2);
+		window.draw(*menu3);
+		window.draw(*menu4);
 
 		window.display();
 
@@ -70,8 +86,8 @@ void menu(sf::RenderWindow & window) {
 		if (sf::Mouse::isButtonPressed(sf::Mouse::Left))
 		{
 			if (menuNum == 1) { startGame(window); }
-			if (menuNum == 2) { window.draw(help);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
-			if (menuNum == 3) { window.draw(about);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
+			if (menuNum == 2) { window.draw(*help);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
+			if (menuNum == 3) { window.draw(*about);	window.display(); while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)); }
 			if (menuNum == 4) { window.close(); isMenu = false; }
 		}	
 		
@@ -79,7 +95,7 @@ void menu(sf::RenderWindow & window) {
 }
 
 
-int startGame(sf::RenderWindow& window)
+bool startGame(sf::RenderWindow& window)
 {
 	bool is_space = false;
 	int pScore = 0;
@@ -129,13 +145,14 @@ int startGame(sf::RenderWindow& window)
 	Ball* ball = new Ball("ball.png", 309,435, 12, 12);
 	Paddle* paddle = new Paddle("paddle_anim.png", 270, 450, 90, 9);
 	
+	bool restart = false;
 
-	while (window.isOpen())
+	while (window.isOpen() && !restart)
 	{
-		sf::Event e;
-		while (window.pollEvent(e))
+		sf::Event* e = new sf::Event;
+		while (window.pollEvent(*e))
 		{
-			if (e.type == sf::Event::Closed)
+			if (e->type == sf::Event::Closed)
 				window.close();
 		}
 
@@ -152,7 +169,7 @@ int startGame(sf::RenderWindow& window)
 		window.draw(*s_backg);
 		paddle->update(time);
 		window.draw(paddle->sprite);
-		ball->update(0);
+		ball->update();
 		window.draw(ball->sprite);
 		
 		//Blocks drawing
@@ -171,6 +188,8 @@ int startGame(sf::RenderWindow& window)
 		/*Game doesn't start while player don't press "Space" bottom*/
 		while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && (is_space == false))
 		{		
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Tab)) return true;
+			if (sf::Keyboard::isKeyPressed(sf::Keyboard::Escape)) return false;
 			ball->dx = 0;
 			ball->dy = 0;
 		}
@@ -219,7 +238,7 @@ int startGame(sf::RenderWindow& window)
 				window.display();
 			}
 			
-			return -1;
+			return false;
 		}
 				
 	}

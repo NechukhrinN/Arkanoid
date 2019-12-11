@@ -8,7 +8,7 @@
 
 void menu(sf::RenderWindow & window);
 
-int startGame(sf::RenderWindow& window);
+bool startGame(sf::RenderWindow& window);
 
 void gameRunning(sf::RenderWindow& window);
 

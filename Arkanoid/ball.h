@@ -14,9 +14,7 @@ public:
 	float CurrentFrame = 0;
 	Ball(sf::String F, float X, float Y, float W, float H);
 	~Ball();
-	void update(float time);
-	float getballcoordinateX();
-	float getballcoordinateY();
+	void update();	
 };
 
 #endif
