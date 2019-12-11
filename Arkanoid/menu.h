@@ -8,8 +8,8 @@
 
 void menu(sf::RenderWindow & window);
 
-int startGame();
+int startGame(sf::RenderWindow& window);
 
-void gameRunning();
+void gameRunning(sf::RenderWindow& window);
 
 #endif

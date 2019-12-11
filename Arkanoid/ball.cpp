@@ -15,8 +15,10 @@ Ball::Ball(sf::String F, float X, float Y, float W, float H)
 
 Ball::~Ball() {}
 /*Update method sets ball position and ball's collision with wall*/
-void Ball::update()
+void Ball::update(float time)
 {
+	CurrentFrame += 0.0008 * time;
+	if (CurrentFrame > 14) CurrentFrame -= 14;
 	if (x < 0 || x > 640)  dx = -dx;
 	if (y < 0)  dy = -dy;
 	sprite.setPosition(x, y);

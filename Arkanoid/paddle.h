@@ -8,7 +8,7 @@ private: float x, y;
 public:
 	bool life;
 	int dir, pScore, health;
-	float w, h, dx, speed, CurrentFrame = 0;;
+	float w, h, dx, speed, CurrentFrame = 0;
 	sf::String File;
 	sf::Image image;
 	sf::Texture texture;

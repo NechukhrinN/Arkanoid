@@ -4,7 +4,7 @@
 check it with new score and save it if (new > old), return actual/new highscore*/
 int get_highscore(int score)
 {
-	int highScore;
+	int highScore = 0;
 	std::ifstream readFile;
 	
 	readFile.open("res/highscore.txt");

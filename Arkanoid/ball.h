@@ -11,10 +11,10 @@ public:
 	sf::Image image;
 	sf::Texture texture;
 	sf::Sprite sprite;
-
+	float CurrentFrame = 0;
 	Ball(sf::String F, float X, float Y, float W, float H);
 	~Ball();
-	void update();
+	void update(float time);
 	float getballcoordinateX();
 	float getballcoordinateY();
 };
