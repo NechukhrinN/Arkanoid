@@ -7,14 +7,17 @@ class Ball
 public:
 	float w, h, dx, dy;
 	float x, y;
-	sf::String File;
-	sf::Image image;
-	sf::Texture texture;
-	sf::Sprite sprite;
+	sf::String* File;
+	sf::Image* image;
+	sf::Texture* texture;
+	sf::Sprite* sprite;
 	float CurrentFrame = 0;
-	Ball(sf::String F, float X, float Y, float W, float H);
+	Ball(const sf::String& F, const float& X, const float& Y, const float& W, const float& H);
 	~Ball();
-	void update();	
+	void update();
+	void update(const float& time);
 };
+
+typedef std::unique_ptr<Ball> Ball_ptr;
 
 #endif

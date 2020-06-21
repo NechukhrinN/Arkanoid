@@ -30,6 +30,9 @@
     <ClCompile Include="highscore.cpp">
       <Filter>Исходные файлы</Filter>
     </ClCompile>
+    <ClCompile Include="MainGame.cpp">
+      <Filter>Исходные файлы</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="menu.h">
@@ -43,6 +46,9 @@
     </ClInclude>
     <ClInclude Include="highscore.h">
       <Filter>Исходные файлы</Filter>
+    </ClInclude>
+    <ClInclude Include="MainGame.h">
+      <Filter>Файлы заголовков</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>

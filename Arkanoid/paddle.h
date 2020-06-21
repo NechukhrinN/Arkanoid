@@ -9,16 +9,18 @@ public:
 	bool life;
 	int dir, pScore, health;
 	float w, h, dx, speed, CurrentFrame = 0;
-	sf::String File;
-	sf::Image image;
-	sf::Texture texture;
-	sf::Sprite sprite;
+	sf::String* File;
+	sf::Image* image;
+	sf::Texture* texture;
+	sf::Sprite* sprite;
 
-	Paddle(sf::String F, float X, float Y, float W, float H);
+	Paddle(const sf::String& F, const float& X, const float& Y, const float& W, const float& H);
 	~Paddle();
-	void update(float time);
+	void update(const float& time);
 	float getpaddlecoordinateX();
 	float getpaddlecoordinateY();
 };
+
+typedef std::unique_ptr<Paddle> Paddle_ptr;
 
 #endif
