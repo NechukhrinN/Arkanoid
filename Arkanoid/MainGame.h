@@ -21,6 +21,7 @@ public:
 	float CurrentFrame;
 	bool is_space;
 	int n;	
+	float time;
 
 	Ball* ball;
 	Paddle* paddle;
@@ -46,9 +47,7 @@ public:
 	sf::Texture* backg;	
 
 	sf::Sprite* block_a;
-
-public:
-	float time;	
+	
 };
 
 typedef std::unique_ptr<MainGame> MainGame_ptr;

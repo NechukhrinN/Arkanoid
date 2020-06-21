@@ -1,6 +1,6 @@
 #include "MainGame.h"
 
-MainGame::MainGame() : restart(false), pScore(0), CurrentFrame(0), is_space(false), n(0), ball(new Ball("ball.png", 309, 435, 12, 12)),
+MainGame::MainGame() : restart(false), pScore(0), CurrentFrame(0), is_space(false), n(0), time(0), ball(new Ball("ball.png", 309, 435, 12, 12)),
 						paddle(new Paddle("paddle_anim.png", 270, 450, 90, 9))
 {
 	Event = new sf::Event;
