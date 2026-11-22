@@ -42,6 +42,7 @@ add_executable(Arkanoid
 	Arkanoid/ball.cpp
 	Arkanoid/paddle.cpp
 	Arkanoid/highscore.cpp
+	Arkanoid/settings.h
 )
 
 target_include_directories(Arkanoid PRIVATE Arkanoid)

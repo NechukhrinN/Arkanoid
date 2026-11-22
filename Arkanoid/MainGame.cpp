@@ -1,4 +1,12 @@
 #include "MainGame.h"
+#include "settings.h"
+
+namespace
+{
+	//Virtual pixels per second, independent of the frame rate.
+	const float BALL_SPEED = 187.5f;
+	const float MAX_FRAME_TIME = 0.05f;
+}
 
 MainGame::MainGame() : restart(false), pScore(0), CurrentFrame(0), is_space(false), n(0), time(0), ball(new Ball("ball.png", 309, 435, 12, 12)),
 						paddle(new Paddle("paddle_anim.png", 270, 450, 90, 9))
@@ -6,14 +14,16 @@ MainGame::MainGame() : restart(false), pScore(0), CurrentFrame(0), is_space(fals
 	Event = new sf::Event;
 	clock_p = new sf::Clock;
 	
+	const unsigned int fontSize = static_cast<unsigned int>(20 * Settings::scale);
+
 	//Loading Fonts fot point counter end endgame message
 	font = new sf::Font;
-	font->loadFromFile("res/fonts/arial.ttf");
-	text = new sf::Text("", *font, 20);
+	font->loadFromFile("res/fonts/arial.TTF");
+	text = new sf::Text("", *font, fontSize);
 	text->setFillColor(sf::Color::White);
-	text_begin = new sf::Text("", *font, 20);
+	text_begin = new sf::Text("", *font, fontSize);
 	text_begin->setFillColor(sf::Color::Black);
-	text_end = new sf::Text("", *font, 20);
+	text_end = new sf::Text("", *font, fontSize);
 	text_end->setFillColor(sf::Color::Red);
 
 	//Loading Images of blocks and backgound
@@ -31,8 +41,12 @@ MainGame::MainGame() : restart(false), pScore(0), CurrentFrame(0), is_space(fals
 	//Loading sprites of blocks and backgound from textures
 	s_block = new sf::Sprite;
 	s_block->setTexture(*block);
+	s_block->setScale(Settings::scale, Settings::scale);
 	s_backg = new sf::Sprite;
 	s_backg->setTexture(*backg);
+	s_backg->setPosition(0.f, 0.f);
+	s_backg->setScale(Settings::windowWidth / Settings::BASE_WIDTH,
+					  Settings::windowHeight / Settings::BASE_HEIGHT);
 
 	/*Making array with information of position of blocks*/
 	block_a = new sf::Sprite[100];
@@ -40,7 +54,8 @@ MainGame::MainGame() : restart(false), pScore(0), CurrentFrame(0), is_space(fals
 		for (int j = 1; j <= 10; j++)
 		{
 			block_a[n].setTexture(*block);
-			block_a[n].setPosition(i * 55, j * 25);
+			block_a[n].setScale(Settings::scale, Settings::scale);
+			block_a[n].setPosition(Settings::position(i * 55, j * 25));
 			n++;
 		}
 	
@@ -55,10 +70,10 @@ bool MainGame::StartGame(sf::RenderWindow* window)
 			if (Event->type == sf::Event::Closed)
 				window->close();
 		}						
-		/*Timer for animation and object's movement*/
-		time = static_cast<float>(clock_p->getElapsedTime().asMicroseconds());
-		clock_p->restart();
-		time = time / 800;
+		/*Delta time in seconds - movement is the same at any refresh rate*/
+		time = clock_p->restart().asSeconds();
+		if (time > MAX_FRAME_TIME)
+			time = MAX_FRAME_TIME;
 
 		/*Keys for restart and close game, active in game window since game start*/
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Tab)) return true;
@@ -79,7 +94,7 @@ bool MainGame::StartGame(sf::RenderWindow* window)
 		std::ostringstream playerScoreString, gameHS;
 		playerScoreString << pScore;
 		text->setString("Points: " + playerScoreString.str());
-		text->setPosition(0, 0);
+		text->setPosition(Settings::position(0, 0));
 
 		//Draw text with information about points in upper left corner		
 		window->draw(*text);
@@ -96,36 +111,38 @@ bool MainGame::StartGame(sf::RenderWindow* window)
 
 		if (sf::Keyboard::isKeyPressed(sf::Keyboard::Space) && !is_space)
 		{
-			ball->dx = 5 * time * 0.3;
-			ball->dy = -5 * time * 0.3;
+			ball->dx = BALL_SPEED;
+			ball->dy = -BALL_SPEED;
 			is_space = true;
+			//Do not count the time spent waiting for Space as a frame.
+			clock_p->restart();
 		}
 
 		/*Ball's movement realization and ball's collision with blocks and puddle*/
-		ball->x += ball->dx * 0.1;
+		ball->x += ball->dx * time;
 
 		for (int i = 0; i < n; i++)
 			/*The sprite of ball is square, to get collision with circle I need to change the border of the sprite,
 			  so that the sprite of the ball is superimposed on the sprite of the block*/
-			if (sf::FloatRect(ball->x + 3, ball->y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
+			if (Settings::toScreenRect(ball->x + 3, ball->y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
 			{
-				block_a[i].setPosition(-100, 0); ball->dx = -ball->dx; ++pScore;
+				block_a[i].setPosition(Settings::position(-1000, 0)); ball->dx = -ball->dx; ++pScore;
 			}
 
-		ball->y += ball->dy * 0.1;
+		ball->y += ball->dy * time;
 
 		for (int i = 0; i < n; i++)
-			if (sf::FloatRect(ball->x + 3, ball->y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
+			if (Settings::toScreenRect(ball->x + 3, ball->y + 3, 6, 6).intersects(block_a[i].getGlobalBounds()))
 			{
-				block_a[i].setPosition(-100, 0); ball->dy = -ball->dy; ++pScore;
+				block_a[i].setPosition(Settings::position(-1000, 0)); ball->dy = -ball->dy; ++pScore;
 			}
 
-		if (sf::FloatRect(ball->x, ball->y, 12, 12).intersects(paddle->sprite->getGlobalBounds())) ball->dy = -5 * time * 0.3;
+		if (Settings::toScreenRect(ball->x, ball->y, 12, 12).intersects(paddle->sprite->getGlobalBounds())) ball->dy = -BALL_SPEED;
 
 		/*"End screen" start when ball hit the bottom line of window or player get 100 point,
 		  include actual score and highscore, highscore rewrite if actual score is higher
 		  This information is active while "Space" key is not clicked*/
-		if ((ball->y > 480) || (pScore == 100))
+		if ((ball->y > Settings::BASE_HEIGHT) || (pScore == 100))
 		{
 			gameHS << get_highscore(pScore);
 			while (!sf::Keyboard::isKeyPressed(sf::Keyboard::Space))
@@ -133,7 +150,7 @@ bool MainGame::StartGame(sf::RenderWindow* window)
 				window->clear();
 				window->draw(*s_backg);
 				text_end->setString("End points: " + playerScoreString.str() + "\nPress space" + "\nHigh Score: " + gameHS.str());
-				text_end->setPosition(260, 190);
+				text_end->setPosition(Settings::position(260, 190));
 				window->draw(*text_end);
 				window->display();
 			}	

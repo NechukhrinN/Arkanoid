@@ -1,4 +1,5 @@
 #include "ball.h"
+#include "settings.h"
 
 /*Constructor of class Ball, get starter information about object, include acceleration and sprite*/
 Ball::Ball(const sf::String& F, const float& X, const float& Y, const float& W, const float& H)
@@ -13,8 +14,10 @@ Ball::Ball(const sf::String& F, const float& X, const float& Y, const float& W, 
 	image->loadFromFile("res/images/" + *File);
 	texture->loadFromImage(*image);
 	sprite->setTexture(*texture);
+	sprite->setScale(Settings::scale, Settings::scale);
 	x = X; y = Y;
-	sprite->setTextureRect(sf::IntRect(0, 0, w, h));
+	sprite->setTextureRect(sf::IntRect(0, 0, static_cast<int>(w), static_cast<int>(h)));
+	sprite->setPosition(Settings::position(x, y));
 }
 
 Ball::~Ball() 
@@ -27,16 +30,16 @@ Ball::~Ball()
 /*Update method sets ball position and ball's collision with wall*/
 void Ball::update()
 {	
-	if (x < 0 || x > 640)  dx = -dx;
+	if (x < 0 || x > Settings::BASE_WIDTH)  dx = -dx;
 	if (y < 0)  dy = -dy;
-	sprite->setPosition(x, y);
+	sprite->setPosition(Settings::position(x, y));
 }
 
 void Ball::update(const float& time)
 {
-	if (x < 0 || x > 640)  dx = -dx;
+	if (x < 0 || x > Settings::BASE_WIDTH)  dx = -dx;
 	if (y < 0)  dy = -dy;
-	sprite->setPosition(x, y);
+	sprite->setPosition(Settings::position(x, y));
 }
 
 

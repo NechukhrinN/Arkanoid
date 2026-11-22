@@ -3,13 +3,24 @@
 #include <sstream>
 #include <time.h>
 #include "menu.h"
+#include "settings.h"
 
 
 int main()
 {
-	sf::RenderWindow* window = new sf::RenderWindow(sf::VideoMode(640, 480), "Arkanoid by Nikita Nechukhrin");
+	sf::RenderWindow* window = new sf::RenderWindow(
+		sf::VideoMode(640, 480),
+		"Arkanoid by Nikita Nechukhrin",
+		sf::Style::Titlebar | sf::Style::Close);
 	window->setFramerateLimit(60);
-	Menu* menu = new Menu(window);	
+
+	Settings::updateLayout(*window);
+	Settings::applyView(*window);
+
+	Menu* menu = new Menu(window);
+
+	delete(menu);
+	delete(window);
 	//system("pause");
 	return 0;
 }
