@@ -22,7 +22,7 @@ Paddle::Paddle(const sf::String& F, const float& X, const float& Y, const float&
 	image->loadFromFile("res/images/" + *File);
 	texture->loadFromImage(*image);
 	sprite->setTexture(*texture);
-	sprite->setScale(Settings::scale, Settings::scale);
+	sprite->setScale(Settings::scaleX, Settings::scaleY);
 	x = X; y = Y;
 	sprite->setTextureRect(sf::IntRect(0, 0, static_cast<int>(w), static_cast<int>(h)));
 	sprite->setPosition(Settings::position(x, y));

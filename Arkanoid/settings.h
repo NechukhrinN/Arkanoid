@@ -5,9 +5,9 @@
 #include <string>
 #include <vector>
 
-/*The whole game is laid out in a virtual 640x480 space.  These helpers map
-  that space to the actual window resolution (with letterboxing) so every
-  position stays correct when another resolution is selected in Settings.*/
+/*The whole game is laid out in a virtual 640x480 space.  These helpers stretch
+  that space to the actual window resolution, so the game fills the window and
+  every position/size stays correct when another resolution is selected.*/
 namespace Settings
 {
 	const float BASE_WIDTH = 640.f;
@@ -15,17 +15,15 @@ namespace Settings
 
 	inline unsigned int windowWidth = 640;
 	inline unsigned int windowHeight = 480;
-	inline float scale = 1.f;
-	inline float offsetX = 0.f;
-	inline float offsetY = 0.f;
+	inline float scaleX = 1.f;
+	inline float scaleY = 1.f;
 
 	inline void updateLayout(unsigned int width, unsigned int height)
 	{
 		windowWidth = (width > 0) ? width : static_cast<unsigned int>(BASE_WIDTH);
 		windowHeight = (height > 0) ? height : static_cast<unsigned int>(BASE_HEIGHT);
-		scale = std::min(windowWidth / BASE_WIDTH, windowHeight / BASE_HEIGHT);
-		offsetX = (windowWidth - BASE_WIDTH * scale) / 2.f;
-		offsetY = (windowHeight - BASE_HEIGHT * scale) / 2.f;
+		scaleX = windowWidth / BASE_WIDTH;
+		scaleY = windowHeight / BASE_HEIGHT;
 	}
 
 	inline void updateLayout(const sf::RenderWindow& window)
@@ -41,8 +39,11 @@ namespace Settings
 			static_cast<float>(windowWidth), static_cast<float>(windowHeight))));
 	}
 
-	inline float toScreenX(float value) { return offsetX + value * scale; }
-	inline float toScreenY(float value) { return offsetY + value * scale; }
+	//Text should keep its aspect ratio, so use the smaller factor for fonts.
+	inline float textScale() { return std::min(scaleX, scaleY); }
+
+	inline float toScreenX(float value) { return value * scaleX; }
+	inline float toScreenY(float value) { return value * scaleY; }
 
 	inline sf::Vector2f position(float x, float y)
 	{
@@ -56,14 +57,13 @@ namespace Settings
 
 	inline sf::Vector2f toVirtual(const sf::Vector2i& point)
 	{
-		return sf::Vector2f((point.x - offsetX) / scale,
-							(point.y - offsetY) / scale);
+		return sf::Vector2f(point.x / scaleX, point.y / scaleY);
 	}
 
 	inline sf::FloatRect toScreenRect(float x, float y, float width, float height)
 	{
 		return sf::FloatRect(toScreenX(x), toScreenY(y),
-							 width * scale, height * scale);
+							 width * scaleX, height * scaleY);
 	}
 
 	inline std::vector<sf::VideoMode> availableResolutions()

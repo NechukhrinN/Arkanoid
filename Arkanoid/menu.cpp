@@ -143,12 +143,11 @@ Menu::Menu(sf::RenderWindow* window)
 
 void Menu::layoutMenu()
 {
-	const float s = Settings::scale;
+	const float s = Settings::textScale();
 
 	/*The background fills the whole window; the rest keeps the 4:3 layout*/
 	menuBg->setPosition(0.f, 0.f);
-	menuBg->setScale(Settings::windowWidth / Settings::BASE_WIDTH,
-					 Settings::windowHeight / Settings::BASE_HEIGHT);
+	menuBg->setScale(Settings::scaleX, Settings::scaleY);
 
 	const unsigned int fontSize = static_cast<unsigned int>(30 * s);
 
@@ -163,9 +162,9 @@ void Menu::layoutMenu()
 	exitLabel->setCharacterSize(fontSize);
 	exitLabel->setPosition(Settings::position(100, 270));
 
-	help->setScale(s, s);
+	help->setScale(Settings::scaleX, Settings::scaleY);
 	help->setPosition(Settings::position(0, 0));
-	about->setScale(s, s);
+	about->setScale(Settings::scaleX, Settings::scaleY);
 	about->setPosition(Settings::position(0, 0));
 }
 
@@ -320,7 +319,7 @@ void Menu::showSettings(sf::RenderWindow* window)
 			return;
 		}
 
-		const float s = Settings::scale;
+		const float textSize = Settings::textScale();
 
 		window->clear(sf::Color::Black);
 		window->draw(*menuBg);
@@ -331,13 +330,13 @@ void Menu::showSettings(sf::RenderWindow* window)
 		shade.setFillColor(sf::Color(0, 0, 0, 160));
 		window->draw(shade);
 
-		sf::Text title("Settings", *font, static_cast<unsigned int>(28 * s));
+		sf::Text title("Settings", *font, static_cast<unsigned int>(28 * textSize));
 		title.setFillColor(sf::Color::White);
 		title.setPosition(Settings::position(listX, 35));
 		window->draw(title);
 
 		sf::Text subtitle("Choose window resolution", *font,
-						  static_cast<unsigned int>(15 * s));
+						  static_cast<unsigned int>(15 * textSize));
 		subtitle.setFillColor(sf::Color(200, 220, 255));
 		subtitle.setPosition(Settings::position(listX, 75));
 		window->draw(subtitle);
@@ -351,7 +350,7 @@ void Menu::showSettings(sf::RenderWindow* window)
 			if (index == selected)
 			{
 				sf::RectangleShape highlight(sf::Vector2f(
-					440 * s, (rowHeight - 2) * s));
+					440 * Settings::scaleX, (rowHeight - 2) * Settings::scaleY));
 				highlight.setPosition(Settings::position(
 					listX - 10, listTop + row * rowHeight - 1));
 				highlight.setFillColor(sf::Color(60, 110, 180, 230));
@@ -365,7 +364,7 @@ void Menu::showSettings(sf::RenderWindow* window)
 			if (current)
 				label += "   (current)";
 
-			sf::Text item(label, *font, static_cast<unsigned int>(18 * s));
+			sf::Text item(label, *font, static_cast<unsigned int>(18 * textSize));
 			item.setFillColor(current ? sf::Color(120, 255, 120) : sf::Color::White);
 			item.setPosition(Settings::position(
 				listX, listTop + row * rowHeight));
@@ -373,7 +372,7 @@ void Menu::showSettings(sf::RenderWindow* window)
 		}
 
 		sf::Text hint("Up/Down: select   Enter: apply   Esc: back   Wheel: scroll",
-					  *font, static_cast<unsigned int>(13 * s));
+					  *font, static_cast<unsigned int>(13 * textSize));
 		hint.setFillColor(sf::Color(200, 220, 255));
 		hint.setPosition(Settings::position(listX, 440));
 		window->draw(hint);
@@ -382,7 +381,7 @@ void Menu::showSettings(sf::RenderWindow* window)
 			std::to_string(std::min(firstVisible + visibleRows,
 									static_cast<int>(resolutions.size()))) +
 			" of " + std::to_string(resolutions.size());
-		sf::Text counterText(counter, *font, static_cast<unsigned int>(13 * s));
+		sf::Text counterText(counter, *font, static_cast<unsigned int>(13 * textSize));
 		counterText.setFillColor(sf::Color(200, 220, 255));
 		counterText.setPosition(Settings::position(470, 75));
 		window->draw(counterText);
