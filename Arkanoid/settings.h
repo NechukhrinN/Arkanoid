@@ -13,6 +13,17 @@ namespace Settings
 	const float BASE_WIDTH = 640.f;
 	const float BASE_HEIGHT = 480.f;
 
+	enum class DisplayMode
+	{
+		Fullscreen = 0,
+		Windowed = 1,
+		Borderless = 2
+	};
+
+	inline const char* const WINDOW_TITLE = "Arkanoid by Nikita Nechukhrin";
+	inline DisplayMode displayMode = DisplayMode::Fullscreen;
+	inline sf::VideoMode currentResolution(640, 480);
+
 	inline unsigned int windowWidth = 640;
 	inline unsigned int windowHeight = 480;
 	inline float scaleX = 1.f;
@@ -66,45 +77,96 @@ namespace Settings
 							 width * scaleX, height * scaleY);
 	}
 
+	inline std::string resolutionName(const sf::VideoMode& mode)
+	{
+		return std::to_string(mode.width) + " x " + std::to_string(mode.height);
+	}
+
+	inline std::string resolutionLabel(const sf::VideoMode& mode)
+	{
+		if (mode.width == 1280 && mode.height == 720)
+			return resolutionName(mode) + " (720p)";
+		if (mode.width == 1920 && mode.height == 1080)
+			return resolutionName(mode) + " (1080p)";
+		if (mode.width == 2560 && mode.height == 1440)
+			return resolutionName(mode) + " (2K)";
+		if (mode.width == 3840 && mode.height == 2160)
+			return resolutionName(mode) + " (4K)";
+		return resolutionName(mode);
+	}
+
+	inline std::string displayModeName(DisplayMode mode)
+	{
+		switch (mode)
+		{
+			case DisplayMode::Fullscreen: return "Fullscreen";
+			case DisplayMode::Windowed: return "Windowed";
+			case DisplayMode::Borderless: return "Borderless windowed";
+		}
+		return "Windowed";
+	}
+
 	inline std::vector<sf::VideoMode> availableResolutions()
 	{
-		std::vector<sf::VideoMode> all = sf::VideoMode::getFullscreenModes();
-		all.push_back(sf::VideoMode::getDesktopMode());
+		const sf::VideoMode targets[] = {
+			sf::VideoMode(1280, 720),
+			sf::VideoMode(1920, 1080),
+			sf::VideoMode(2560, 1440),
+			sf::VideoMode(3840, 2160)
+		};
+
+		std::vector<sf::VideoMode> supported = sf::VideoMode::getFullscreenModes();
+		supported.push_back(sf::VideoMode::getDesktopMode());
 
 		std::vector<sf::VideoMode> modes;
-		for (const sf::VideoMode& mode : all)
+		for (const sf::VideoMode& target : targets)
 		{
-			if (mode.width < 640 || mode.height < 480)
-				continue;
-
-			bool duplicate = false;
-			for (const sf::VideoMode& existing : modes)
+			for (const sf::VideoMode& mode : supported)
 			{
-				if (existing.width == mode.width && existing.height == mode.height)
+				if (mode.width == target.width && mode.height == target.height)
 				{
-					duplicate = true;
+					modes.push_back(target);
 					break;
 				}
 			}
-
-			if (!duplicate)
-				modes.push_back(mode);
 		}
-
-		std::sort(modes.begin(), modes.end(),
-			[](const sf::VideoMode& a, const sf::VideoMode& b)
-			{
-				if (a.width != b.width)
-					return a.width < b.width;
-				return a.height < b.height;
-			});
 
 		return modes;
 	}
 
-	inline std::string resolutionName(const sf::VideoMode& mode)
+	inline sf::VideoMode highestSupportedResolution()
 	{
-		return std::to_string(mode.width) + " x " + std::to_string(mode.height);
+		std::vector<sf::VideoMode> modes = availableResolutions();
+		if (!modes.empty())
+			return modes.back();
+
+		sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+		return sf::VideoMode(desktop.width, desktop.height);
+	}
+
+	inline void applyWindowSettings(sf::RenderWindow& window, const std::string& title)
+	{
+		sf::Uint32 style = sf::Style::Titlebar | sf::Style::Close;
+		if (displayMode == DisplayMode::Fullscreen)
+			style = sf::Style::Fullscreen;
+		else if (displayMode == DisplayMode::Borderless)
+			style = sf::Style::None;
+
+		window.create(currentResolution, title, style);
+		window.setFramerateLimit(60);
+
+		if (displayMode != DisplayMode::Fullscreen)
+		{
+			sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
+			int x = (static_cast<int>(desktop.width) -
+					 static_cast<int>(currentResolution.width)) / 2;
+			int y = (static_cast<int>(desktop.height) -
+					 static_cast<int>(currentResolution.height)) / 2;
+			window.setPosition(sf::Vector2i(std::max(0, x), std::max(0, y)));
+		}
+
+		updateLayout(window);
+		applyView(window);
 	}
 }
 

@@ -1,6 +1,7 @@
 #ifndef  MENU
 #define MENU
 #include "MainGame.h"
+#include "productinfo.h"
 #include <vector>
 
 class Menu
@@ -11,6 +12,7 @@ public:
 
 private:
 	void layoutMenu();
+	void reloadResources();
 	void showInfo(sf::RenderWindow* window, sf::Sprite* screen);
 	void showSettings(sf::RenderWindow* window);
 	void applyResolution(sf::RenderWindow* window, const sf::VideoMode& mode);
@@ -31,6 +33,8 @@ public:
 	sf::Text* aboutLabel;
 	sf::Text* settingsLabel;
 	sf::Text* exitLabel;
+	ProductInfo* productInfo;
+	sf::Text* productInfoLabel;
 	std::vector<sf::VideoMode> resolutions;
 
 public:

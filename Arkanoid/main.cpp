@@ -8,14 +8,11 @@
 
 int main()
 {
-	sf::RenderWindow* window = new sf::RenderWindow(
-		sf::VideoMode(640, 480),
-		"Arkanoid by Nikita Nechukhrin",
-		sf::Style::Titlebar | sf::Style::Close);
-	window->setFramerateLimit(60);
+	Settings::currentResolution = Settings::highestSupportedResolution();
+	Settings::displayMode = Settings::DisplayMode::Fullscreen;
 
-	Settings::updateLayout(*window);
-	Settings::applyView(*window);
+	sf::RenderWindow* window = new sf::RenderWindow();
+	Settings::applyWindowSettings(*window, Settings::WINDOW_TITLE);
 
 	Menu* menu = new Menu(window);
 

@@ -38,6 +38,10 @@ Menu::Menu(sf::RenderWindow* window)
 	exitLabel = new sf::Text("Exit", *font, 30);
 	exitLabel->setFillColor(sf::Color::White);
 
+	productInfo = new ProductInfo();
+	productInfoLabel = new sf::Text(productInfo->getVersion(), *font, 6);
+	productInfoLabel->setFillColor(sf::Color::White);
+
 	resolutions = Settings::availableResolutions();
 
 	layoutMenu();
@@ -108,6 +112,7 @@ Menu::Menu(sf::RenderWindow* window)
 		window->draw(*aboutLabel);
 		window->draw(*settingsLabel);
 		window->draw(*exitLabel);
+		window->draw(*productInfoLabel);
 		window->display();
 
 		/*Click processing*/
@@ -141,6 +146,14 @@ Menu::Menu(sf::RenderWindow* window)
 	}
 }
 
+void Menu::reloadResources()
+{
+	helpTexture->loadFromFile("res/images/help.png");
+	aboutTexture->loadFromFile("res/images/about.png");
+	menuBackground->loadFromFile("res/images/main_back.jpg");
+	font->loadFromFile("res/fonts/arial.TTF");
+}
+
 void Menu::layoutMenu()
 {
 	const float s = Settings::textScale();
@@ -161,6 +174,15 @@ void Menu::layoutMenu()
 	settingsLabel->setPosition(Settings::position(100, 210));
 	exitLabel->setCharacterSize(fontSize);
 	exitLabel->setPosition(Settings::position(100, 270));
+
+	/*Version info: one fifth of the menu item font size, bottom-right corner*/
+	productInfoLabel->setCharacterSize(std::max(1u, fontSize / 5));
+	productInfoLabel->setPosition(0.f, 0.f);
+	sf::FloatRect infoBounds = productInfoLabel->getLocalBounds();
+	float margin = 6.f * s;
+	productInfoLabel->setPosition(
+		static_cast<float>(Settings::windowWidth) - infoBounds.left - infoBounds.width - margin,
+		static_cast<float>(Settings::windowHeight) - infoBounds.top - infoBounds.height - margin);
 
 	help->setScale(Settings::scaleX, Settings::scaleY);
 	help->setPosition(Settings::position(0, 0));
@@ -203,35 +225,39 @@ void Menu::showInfo(sf::RenderWindow* window, sf::Sprite* screen)
 
 void Menu::showSettings(sf::RenderWindow* window)
 {
-	const float listX = 100.f;
-	const float listTop = 105.f;
-	const float rowHeight = 24.f;
-	const int visibleRows = 13;
+	resolutions = Settings::availableResolutions();
 
-	const int lastRow = (static_cast<int>(resolutions.size()) > visibleRows)
-		? static_cast<int>(resolutions.size()) - visibleRows : 0;
+	const float leftX = 60.f;
+	const float rightX = 330.f;
+	const float boxY = 100.f;
+	const float boxWidth = 230.f;
+	const float boxHeight = 36.f;
+	const float rowHeight = 32.f;
+	const float optionsTop = boxY + boxHeight + 4.f;
 
-	int selected = 0;
+	int currentResolution = -1;
 	for (int i = 0; i < static_cast<int>(resolutions.size()); i++)
 	{
-		if (resolutions[i].width == Settings::windowWidth &&
-			resolutions[i].height == Settings::windowHeight)
+		if (resolutions[i].width == Settings::currentResolution.width &&
+			resolutions[i].height == Settings::currentResolution.height)
 		{
-			selected = i;
+			currentResolution = i;
 			break;
 		}
 	}
 
-	int firstVisible = 0;
-	if (selected >= visibleRows)
-		firstVisible = selected - visibleRows + 1;
+	const int currentMode = static_cast<int>(Settings::displayMode);
+	const int modeCount = 3;
 
-	if (resolutions.empty())
-		return;
+	int openList = 0; // 0 = closed, 1 = display mode, 2 = resolution
+	int highlightedMode = currentMode;
+	int highlightedResolution = (currentResolution >= 0) ? currentResolution
+		: (resolutions.empty() ? -1 : 0);
 
 	while (window->isOpen())
 	{
-		int applyIndex = -1;
+		int applyMode = -1;
+		int applyResolutionIndex = -1;
 
 		while (window->pollEvent(*Event))
 		{
@@ -250,41 +276,77 @@ void Menu::showSettings(sf::RenderWindow* window)
 			}
 			else if (Event->type == sf::Event::KeyPressed)
 			{
-				if (Event->key.code == sf::Keyboard::Up && selected > 0)
-					selected--;
-				else if (Event->key.code == sf::Keyboard::Down &&
-						 selected + 1 < static_cast<int>(resolutions.size()))
-					selected++;
+				if (Event->key.code == sf::Keyboard::Escape)
+				{
+					if (openList != 0)
+						openList = 0;
+					else
+						return;
+				}
+				else if (Event->key.code == sf::Keyboard::Up)
+				{
+					if (openList == 1)
+					{
+						if (highlightedMode > 0)
+							highlightedMode--;
+						else
+							highlightedMode = modeCount - 1;
+					}
+					else if (openList == 2 && !resolutions.empty())
+					{
+						if (highlightedResolution > 0)
+							highlightedResolution--;
+						else
+							highlightedResolution = static_cast<int>(resolutions.size()) - 1;
+					}
+				}
+				else if (Event->key.code == sf::Keyboard::Down)
+				{
+					if (openList == 1)
+					{
+						if (highlightedMode + 1 < modeCount)
+							highlightedMode++;
+						else
+							highlightedMode = 0;
+					}
+					else if (openList == 2 && !resolutions.empty())
+					{
+						if (highlightedResolution + 1 < static_cast<int>(resolutions.size()))
+							highlightedResolution++;
+						else
+							highlightedResolution = 0;
+					}
+				}
 				else if (Event->key.code == sf::Keyboard::Enter)
-					applyIndex = selected;
-				else if (Event->key.code == sf::Keyboard::Escape)
-					return;
+				{
+					if (openList == 1)
+						applyMode = highlightedMode;
+					else if (openList == 2 && highlightedResolution >= 0)
+						applyResolutionIndex = highlightedResolution;
+					else if (openList == 0 && !resolutions.empty())
+						openList = 2;
+				}
 			}
-			else if (Event->type == sf::Event::MouseWheelScrolled &&
-					 Event->mouseWheelScroll.wheel == sf::Mouse::VerticalWheel)
-			{
-				firstVisible -= static_cast<int>(Event->mouseWheelScroll.delta);
-				if (firstVisible < 0)
-					firstVisible = 0;
-				if (firstVisible > lastRow)
-					firstVisible = lastRow;
-
-				if (selected < firstVisible)
-					selected = firstVisible;
-				if (selected >= firstVisible + visibleRows)
-					selected = firstVisible + visibleRows - 1;
-			}
-			else if (Event->type == sf::Event::MouseMoved)
+			else if (Event->type == sf::Event::MouseMoved && openList != 0)
 			{
 				sf::Vector2f point = Settings::toVirtual(
 					sf::Vector2i(Event->mouseMove.x, Event->mouseMove.y));
-				int row = static_cast<int>((point.y - listTop) / rowHeight);
+				int row = static_cast<int>((point.y - optionsTop) / rowHeight);
 
-				if (point.x >= listX - 10 && point.x <= listX + 440 &&
-					row >= 0 && row < visibleRows &&
-					firstVisible + row < static_cast<int>(resolutions.size()))
+				if (point.y >= optionsTop && row >= 0)
 				{
-					selected = firstVisible + row;
+					if (openList == 1 &&
+						point.x >= leftX && point.x <= leftX + boxWidth &&
+						row < modeCount)
+					{
+						highlightedMode = row;
+					}
+					else if (openList == 2 &&
+							 point.x >= rightX && point.x <= rightX + boxWidth &&
+							 row < static_cast<int>(resolutions.size()))
+					{
+						highlightedResolution = row;
+					}
 				}
 			}
 			else if (Event->type == sf::Event::MouseButtonPressed &&
@@ -292,30 +354,68 @@ void Menu::showSettings(sf::RenderWindow* window)
 			{
 				sf::Vector2f point = Settings::toVirtual(
 					sf::Vector2i(Event->mouseButton.x, Event->mouseButton.y));
-				int row = static_cast<int>((point.y - listTop) / rowHeight);
 
-				if (point.x >= listX - 10 && point.x <= listX + 440 &&
-					row >= 0 && row < visibleRows &&
-					firstVisible + row < static_cast<int>(resolutions.size()))
+				bool inModeBox = point.x >= leftX && point.x <= leftX + boxWidth &&
+								 point.y >= boxY && point.y <= boxY + boxHeight;
+				bool inResolutionBox = point.x >= rightX && point.x <= rightX + boxWidth &&
+									   point.y >= boxY && point.y <= boxY + boxHeight;
+
+				if (inModeBox)
 				{
-					selected = firstVisible + row;
-					applyIndex = selected;
+					openList = (openList == 1) ? 0 : 1;
+					highlightedMode = currentMode;
+				}
+				else if (inResolutionBox)
+				{
+					if (!resolutions.empty())
+					{
+						openList = (openList == 2) ? 0 : 2;
+						highlightedResolution = (currentResolution >= 0) ? currentResolution : 0;
+					}
+				}
+				else if (openList != 0 && point.y >= optionsTop)
+				{
+					int row = static_cast<int>((point.y - optionsTop) / rowHeight);
+
+					if (openList == 1 &&
+						point.x >= leftX && point.x <= leftX + boxWidth &&
+						row >= 0 && row < modeCount)
+					{
+						highlightedMode = row;
+						applyMode = row;
+					}
+					else if (openList == 2 &&
+							 point.x >= rightX && point.x <= rightX + boxWidth &&
+							 row >= 0 && row < static_cast<int>(resolutions.size()))
+					{
+						highlightedResolution = row;
+						applyResolutionIndex = row;
+					}
+					else
+					{
+						openList = 0;
+					}
+				}
+				else
+				{
+					openList = 0;
 				}
 			}
 		}
 
-		if (selected < firstVisible)
-			firstVisible = selected;
-		if (selected >= firstVisible + visibleRows)
-			firstVisible = selected - visibleRows + 1;
-		if (firstVisible < 0)
-			firstVisible = 0;
-		if (firstVisible > lastRow)
-			firstVisible = lastRow;
-
-		if (applyIndex >= 0 && applyIndex < static_cast<int>(resolutions.size()))
+		if (applyMode >= 0)
 		{
-			applyResolution(window, resolutions[applyIndex]);
+			Settings::displayMode = static_cast<Settings::DisplayMode>(applyMode);
+			Settings::applyWindowSettings(*window, Settings::WINDOW_TITLE);
+			reloadResources();
+			layoutMenu();
+			return;
+		}
+
+		if (applyResolutionIndex >= 0 &&
+			applyResolutionIndex < static_cast<int>(resolutions.size()))
+		{
+			applyResolution(window, resolutions[applyResolutionIndex]);
 			return;
 		}
 
@@ -332,59 +432,108 @@ void Menu::showSettings(sf::RenderWindow* window)
 
 		sf::Text title("Settings", *font, static_cast<unsigned int>(28 * textSize));
 		title.setFillColor(sf::Color::White);
-		title.setPosition(Settings::position(listX, 35));
+		title.setPosition(Settings::position(leftX, 35));
 		window->draw(title);
 
-		sf::Text subtitle("Choose window resolution", *font,
-						  static_cast<unsigned int>(15 * textSize));
-		subtitle.setFillColor(sf::Color(200, 220, 255));
-		subtitle.setPosition(Settings::position(listX, 75));
-		window->draw(subtitle);
+		sf::Text modeLabel("Display mode", *font,
+						   static_cast<unsigned int>(15 * textSize));
+		modeLabel.setFillColor(sf::Color(200, 220, 255));
+		modeLabel.setPosition(Settings::position(leftX, 70));
+		window->draw(modeLabel);
 
-		for (int row = 0; row < visibleRows; row++)
+		sf::Text resolutionLabel("Screen resolution", *font,
+								 static_cast<unsigned int>(15 * textSize));
+		resolutionLabel.setFillColor(sf::Color(200, 220, 255));
+		resolutionLabel.setPosition(Settings::position(rightX, 70));
+		window->draw(resolutionLabel);
+
+		auto drawCombo = [&](float x, const std::string& text, bool isOpen)
 		{
-			int index = firstVisible + row;
-			if (index >= static_cast<int>(resolutions.size()))
-				break;
+			sf::RectangleShape combo(sf::Vector2f(
+				boxWidth * Settings::scaleX, boxHeight * Settings::scaleY));
+			combo.setPosition(Settings::position(x, boxY));
+			combo.setFillColor(sf::Color(20, 30, 50, 235));
+			combo.setOutlineColor(sf::Color(200, 220, 255));
+			combo.setOutlineThickness(2.f);
+			window->draw(combo);
 
-			if (index == selected)
+			sf::Text value(text, *font, static_cast<unsigned int>(18 * textSize));
+			value.setFillColor(sf::Color::White);
+			value.setPosition(Settings::position(x + 10, boxY + 8));
+			window->draw(value);
+
+			sf::Text arrow(isOpen ? "^" : "v", *font,
+						   static_cast<unsigned int>(18 * textSize));
+			arrow.setFillColor(sf::Color(200, 220, 255));
+			arrow.setPosition(Settings::position(x + boxWidth - 24, boxY + 8));
+			window->draw(arrow);
+		};
+
+		auto drawOptions = [&](float x, const std::vector<std::string>& labels,
+							   int highlighted, int current)
+		{
+			for (int i = 0; i < static_cast<int>(labels.size()); i++)
 			{
-				sf::RectangleShape highlight(sf::Vector2f(
-					440 * Settings::scaleX, (rowHeight - 2) * Settings::scaleY));
-				highlight.setPosition(Settings::position(
-					listX - 10, listTop + row * rowHeight - 1));
-				highlight.setFillColor(sf::Color(60, 110, 180, 230));
-				window->draw(highlight);
+				float rowY = optionsTop + i * rowHeight;
+
+				sf::RectangleShape option(sf::Vector2f(
+					boxWidth * Settings::scaleX,
+					(rowHeight - 2) * Settings::scaleY));
+				option.setPosition(Settings::position(x, rowY));
+				option.setFillColor(i == highlighted
+					? sf::Color(60, 110, 180, 240)
+					: sf::Color(20, 30, 50, 235));
+				option.setOutlineColor(sf::Color(120, 150, 200));
+				option.setOutlineThickness(1.f);
+				window->draw(option);
+
+				sf::Text item(labels[i], *font,
+							  static_cast<unsigned int>(18 * textSize));
+				item.setFillColor(i == current ? sf::Color(120, 255, 120)
+											   : sf::Color::White);
+				item.setPosition(Settings::position(x + 10, rowY + 5));
+				window->draw(item);
 			}
+		};
 
-			bool current = (resolutions[index].width == Settings::windowWidth &&
-							resolutions[index].height == Settings::windowHeight);
+		drawCombo(leftX, Settings::displayModeName(Settings::displayMode),
+				  openList == 1);
 
-			std::string label = Settings::resolutionName(resolutions[index]);
-			if (current)
-				label += "   (current)";
+		std::string resolutionText;
+		if (resolutions.empty())
+			resolutionText = "No supported resolutions";
+		else if (currentResolution >= 0)
+			resolutionText = Settings::resolutionLabel(resolutions[currentResolution]);
+		else
+			resolutionText = Settings::resolutionName(Settings::currentResolution);
 
-			sf::Text item(label, *font, static_cast<unsigned int>(18 * textSize));
-			item.setFillColor(current ? sf::Color(120, 255, 120) : sf::Color::White);
-			item.setPosition(Settings::position(
-				listX, listTop + row * rowHeight));
-			window->draw(item);
+		drawCombo(rightX, resolutionText, openList == 2);
+
+		if (openList == 1)
+		{
+			std::vector<std::string> labels;
+			for (int i = 0; i < modeCount; i++)
+				labels.push_back(Settings::displayModeName(
+					static_cast<Settings::DisplayMode>(i)));
+
+			drawOptions(leftX, labels, highlightedMode, currentMode);
+		}
+		else if (openList == 2)
+		{
+			std::vector<std::string> labels;
+			for (const sf::VideoMode& mode : resolutions)
+				labels.push_back(Settings::resolutionLabel(mode));
+
+			drawOptions(rightX, labels, highlightedResolution, currentResolution);
 		}
 
-		sf::Text hint("Up/Down: select   Enter: apply   Esc: back   Wheel: scroll",
-					  *font, static_cast<unsigned int>(13 * textSize));
+		sf::Text hint(openList != 0
+			? "Up/Down: select   Enter: apply   Esc: close"
+			: "Click a list to change it   Esc: back",
+			*font, static_cast<unsigned int>(13 * textSize));
 		hint.setFillColor(sf::Color(200, 220, 255));
-		hint.setPosition(Settings::position(listX, 440));
+		hint.setPosition(Settings::position(leftX, 440));
 		window->draw(hint);
-
-		std::string counter = std::to_string(firstVisible + 1) + "-" +
-			std::to_string(std::min(firstVisible + visibleRows,
-									static_cast<int>(resolutions.size()))) +
-			" of " + std::to_string(resolutions.size());
-		sf::Text counterText(counter, *font, static_cast<unsigned int>(13 * textSize));
-		counterText.setFillColor(sf::Color(200, 220, 255));
-		counterText.setPosition(Settings::position(470, 75));
-		window->draw(counterText);
 
 		window->display();
 	}
@@ -392,17 +541,9 @@ void Menu::showSettings(sf::RenderWindow* window)
 
 void Menu::applyResolution(sf::RenderWindow* window, const sf::VideoMode& mode)
 {
-	window->setSize(sf::Vector2u(mode.width, mode.height));
-
-	sf::Vector2u actual = window->getSize();
-	Settings::updateLayout(actual.x, actual.y);
-	Settings::applyView(*window);
-
-	sf::VideoMode desktop = sf::VideoMode::getDesktopMode();
-	int x = (static_cast<int>(desktop.width) - static_cast<int>(actual.x)) / 2;
-	int y = (static_cast<int>(desktop.height) - static_cast<int>(actual.y)) / 2;
-	window->setPosition(sf::Vector2i(std::max(0, x), std::max(0, y)));
-
+	Settings::currentResolution = sf::VideoMode(mode.width, mode.height);
+	Settings::applyWindowSettings(*window, Settings::WINDOW_TITLE);
+	reloadResources();
 	layoutMenu();
 }
 
@@ -431,6 +572,8 @@ Menu::~Menu()
 	delete(aboutLabel);
 	delete(settingsLabel);
 	delete(exitLabel);
+	delete(productInfoLabel);
+	delete(productInfo);
 
 	delete(font);
 };
